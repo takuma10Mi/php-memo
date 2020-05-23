@@ -17,18 +17,27 @@
 
 <main>
 <h2>Practice</h2>
-<pre>
 <?php
-try{
-  $db= new PDO('mysql:dbname=mydb;host=localhost;charset=utf8','root','root');
-} catch(PDOException $e){
-  echo 'DB接続エラー:' . $e->getmessage();
-};
+require('dbconnect.php');
+if(isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
+$page = $_REQUEST['page'];
+}else{
+  $page = 1;
+}
 
-$count = $db->exec('INSERT INTO my_items SET maker_id=1, item_name="もも",price=210,keyword="ピンク,缶詰,甘い"');
-echo $count . '件のデータを挿入しました';
+$start = 5 *($page -1);
+
+$memos =$db->prepare('SELECT * FROM memos ORDER BY id DESC LIMIT ?,5');
+$memos->bindParam(1, $start, PDO::PARAM_INT);
+$memos->execute();
 ?>
-</pre>
+<article>
+  <?php while($memo = $memos->fetch()):?>
+    <p><a href="memo.php?id=<?php print($memo['id'])?>"><?php print(mb_substr($memo['memo'],0,50));?></a></p>
+    <time><?php print($memo['created_at']);?></time>
+    <hr>
+  <?php endwhile; ?>
+</article>
 </main>
 </body>    
 </html>
